@@ -10,7 +10,7 @@
         public byte btPlusMinus;
         public byte btTemperature;
         public byte btOutputPower;
-        public byte btWorkAntenna;       
+        public byte btWorkAntenna;
 
         public byte btRegion;
         public byte btFrequencyStart;
@@ -41,7 +41,7 @@
             btPlusMinus = 0x00;
             btTemperature = 0x00;
             btOutputPower = 0x00;
-            btWorkAntenna = 0x00;          
+            btWorkAntenna = 0x00;
             btRegion = 0x00;
             btFrequencyStart = 0x00;
             btFrequencyEnd = 0x00;

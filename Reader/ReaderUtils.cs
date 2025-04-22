@@ -32,7 +32,7 @@ namespace Reader
             }
             catch (System.Exception ex)
             {
-            	
+
             }
 
             return btAryHex;
@@ -47,7 +47,7 @@ namespace Reader
 
             string strResult = string.Empty;
 
-            for (int nloop = nIndex; nloop < nIndex + nLen; nloop++ )
+            for (int nloop = nIndex; nloop < nIndex + nLen; nloop++)
             {
                 string strTemp = string.Format(" {0:X2}", btAryHex[nloop]);
 
@@ -73,7 +73,7 @@ namespace Reader
                 string strTemp = string.Empty;
                 int nTemp = 0;
 
-                for (int nloop = 0; nloop < strValue.Length; nloop++ )
+                for (int nloop = 0; nloop < strValue.Length; nloop++)
                 {
                     if (strValue[nloop] == ' ')
                     {

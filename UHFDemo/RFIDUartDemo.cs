@@ -111,7 +111,7 @@ namespace UHFDemo
 
             //Initializes the default configuration of the connection reader
             RefreshComPorts();
-            GenerateColmnsDataGridForInv();
+            //GenerateColmnsDataGridForInv();
 
             // 创建并配置Timer
             timer = new System.Windows.Forms.Timer();
@@ -223,7 +223,7 @@ namespace UHFDemo
 
         /// <summary>
         /// 数据解析
-        /// string info = string.Format("{0}-{1}-{2}-{3}-{4}", strPC, strEPC, strAntId, strFreq, strRSSI);
+        /// string info = string.Format("{0}-{1}-{2}-{3}-{4}-{5}", strPC, strEPC, strAntId, strFreq, strRSSI,strTid);
         /// string.Format("{0}-{1}", nReadRate, nDataCount)
         /// </summary>
         /// <param name="info"></param>
@@ -234,7 +234,8 @@ namespace UHFDemo
             {
                 data = info.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
             }
-            if (data != null && data.Length >= 5)
+            Console.WriteLine(info);
+            if (data != null && data.Length >= 6)
             {
                 var epc = data[1];
                 readTotal++;
@@ -249,14 +250,15 @@ namespace UHFDemo
                         lock (dgvInventoryTagResults)
                         {
                             var num = dgvInventoryTagResults.Rows.Count;
-                            var item = new object[7];
+                            var item = new object[8];
                             item[0] = num;
                             item[1] = 1;
                             item[2] = data[0];
                             item[3] = data[1];
-                            item[4] = data[2];
-                            item[5] = data[3];
-                            item[6] = (Convert.ToInt32(data[4]) - 129).ToString();
+                            item[4] = data[5];
+                            item[5] = data[2];
+                            item[6] = data[3];
+                            item[7] = (Convert.ToInt32(data[4]) - 129).ToString();
                             dgvInventoryTagResults.Rows.Add(item);
                             txtCmdTagCount.Text = epcList.Count.ToString();
                         }
@@ -385,6 +387,7 @@ namespace UHFDemo
             if (btnConnect.Text.Equals(FindResource("Connect")))
             {
                 ConnectReader();
+                uart.SetTid(false);
             }
             else if (btnConnect.Text.Equals(FindResource("Disconnect")))
             {
@@ -476,6 +479,7 @@ namespace UHFDemo
                 //2.多天线轮询开启天线1和天线2 轮询
                 uart.StartInventoryFast(new List<int> { 1, 1, 1, 1 });
                 btnInventory.Text = "停止盘存";
+                uart.SetTid(true);
             }
             else if (btnInventory.Text.Equals(FindResource("StopInventory")))
             {
@@ -552,7 +556,11 @@ namespace UHFDemo
 
             EPC_fast_inv.DataPropertyName = "EPC";
             EPC_fast_inv.HeaderText = FindResource("EPC");
-            EPC_fast_inv.MinimumWidth = 240;
+            EPC_fast_inv.MinimumWidth = 200;
+
+            TID_fast_inv.DataPropertyName = "TID";
+            TID_fast_inv.HeaderText = "TID";
+            TID_fast_inv.MinimumWidth = 100;
 
             ReadCount_fast_inv.DataPropertyName = "ReadCount";
             ReadCount_fast_inv.HeaderText = FindResource("ReadCount");

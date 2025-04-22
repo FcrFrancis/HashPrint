@@ -10,7 +10,7 @@ namespace Reader
     public delegate void AnalyDataCallback(object sender, MessageTran msgTran);
     public delegate void ErrCallback(object sender, ErrorReceivedEventArgs e);
 
-    public class ReaderMethod 
+    public class ReaderMethod
     {
         private ITalker italker = null;
         private ITalker iSerial = null;
@@ -33,7 +33,7 @@ namespace Reader
 
         private void MessageReceived(object sender, TransportDataEventArgs e)
         {
-            if(m_nType != ReaderType.SerialPort)
+            if (m_nType != ReaderType.SerialPort)
                 OnTransport(sender, e);
             RunReceiveDataCallback(e.Data);
         }
@@ -116,7 +116,7 @@ namespace Reader
         string writeUUID = "0000fff2-0000-1000-8000-00805f9b34fb";// 65522
         public void StartBLE(GattCharacteristic RecvGatt, GattCharacteristic SendGatt)
         {
-            if(ible == null)
+            if (ible == null)
             {
                 ible = new Ble();
                 ible.EvRecvData += MessageReceived;
@@ -240,7 +240,7 @@ namespace Reader
             }
             else if (m_nType == ReaderType.BLE)
             {
-                if(ible.SendMessage(btArySenderData))
+                if (ible.SendMessage(btArySenderData))
                 {
                     OnTransport(this.ible, new TransportDataEventArgs(true, btArySenderData));
                     return 0;
@@ -443,7 +443,7 @@ namespace Reader
 
             return nResult;
         }
-     
+
 
         public int SetFrequencyRegion(byte btReadId, byte btRegion, byte btStartRegion, byte btEndRegion)
         {

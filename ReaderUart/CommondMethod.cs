@@ -28,7 +28,7 @@ namespace ReaderUart
             }
             catch (Exception ex)
             {
-            	
+
             }
 
             return btAryHex;
@@ -60,7 +60,7 @@ namespace ReaderUart
             }
             catch (System.Exception ex)
             {
-            	
+
             }
 
             return btAryHex;
@@ -82,9 +82,9 @@ namespace ReaderUart
 
             string strResult = string.Empty;
 
-            for (int nloop = nIndex; nloop < nIndex + nLen; nloop++ )
+            for (int nloop = nIndex; nloop < nIndex + nLen; nloop++)
             {
-                string strTemp = string.Format(" {0:X2}", btAryHex[nloop]);
+                string strTemp = string.Format("{0:X2}", btAryHex[nloop]);
 
                 strResult += strTemp;
             }
@@ -108,7 +108,7 @@ namespace ReaderUart
                 string strTemp = string.Empty;
                 int nTemp = 0;
 
-                for (int nloop = 0; nloop < strValue.Length; nloop++ )
+                for (int nloop = 0; nloop < strValue.Length; nloop++)
                 {
                     if (strValue[nloop] == ' ')
                     {
@@ -283,5 +283,5 @@ namespace ReaderUart
 
             return strErrorCode;
         }
-    }    
+    }
 }

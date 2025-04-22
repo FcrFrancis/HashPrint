@@ -3,6 +3,7 @@ using Reader;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +28,7 @@ namespace ReaderUart
         //连接时重置 功率、天线、频点
         private bool isFirstSet;
         private List<int> fastAnts;
+        private bool _showTid;
 
         /// <summary>
         /// 
@@ -147,6 +149,20 @@ namespace ReaderUart
         public void GetTemperature()
         {
             reader.GetReaderTemperature(m_curSetting.btReadId);
+        }
+
+        public void SetTid(bool tid)
+        {
+            if (tid)
+            {
+                _showTid = true;
+                reader.SetMonzaStatusUnsave(m_curSetting.btReadId, 0x8d);
+            }
+            else
+            {
+                _showTid = false;
+                reader.SetMonzaStatusUnsave(m_curSetting.btReadId, 0x00);
+            }
         }
 
         /// <summary>
@@ -330,6 +346,10 @@ namespace ReaderUart
                 case 0x8A:
                     ProcessFastSwitch(msgTran);
                     break;
+                case 0x8C:
+                case 0x8D:
+                    ProcessFastTid(msgTran);
+                    break;
                 #endregion //0x8x  
 
                 default:
@@ -418,7 +438,7 @@ namespace ReaderUart
                     //设置工作天线
                     if (isFirstSet)
                     {
-                       SetWorkAntenna();
+                        SetWorkAntenna();
                     }
 
                     return;
@@ -696,8 +716,9 @@ namespace ReaderUart
             //读写器询检成功，状态信息返回
             else if (msgTran.AryData.Length == 7)
             {
-                int nReadRate = Convert.ToInt32(msgTran.AryData[1]) * 256 + Convert.ToInt32(msgTran.AryData[2]);
-                int nDataCount = Convert.ToInt32(msgTran.AryData[3]) * 256 * 256 * 256 + Convert.ToInt32(msgTran.AryData[4]) * 256 * 256 + Convert.ToInt32(msgTran.AryData[5]) * 256 + Convert.ToInt32(msgTran.AryData[6]);
+                int antNo = msgTran.AryData[0];
+                int nReadRate = msgTran.AryData[1] << 8 | msgTran.AryData[2];
+                int nDataCount = msgTran.AryData[3] << 24 | msgTran.AryData[4] << 16 | msgTran.AryData[5] << 8 | msgTran.AryData[6];
 
                 string info = string.Format("{0}-{1}", nReadRate, nDataCount);
                 //异步回调
@@ -744,6 +765,23 @@ namespace ReaderUart
             }
         }
 
+        private void ProcessFastTid(Reader.MessageTran msgTran)
+        {
+            string strCmd = "快速Tid";
+            string strErrorCode = string.Empty;
+            string content = string.Empty;
+            //读写器询检失败
+            if (msgTran.AryData.Length == 1)
+            {
+                strErrorCode = CommondMethod.FormatErrorCode(msgTran.AryData[0]);
+                string strLog = strCmd + "执行结果： " + strErrorCode;
+
+                content = $"{strCmd} {strLog}";
+                s_log.Info(content);
+                print(content, 1);
+            }
+        }
+
         private void ProcessFastSwitch(Reader.MessageTran msgTran)
         {
             string strCmd = "快速盘存";
@@ -762,17 +800,29 @@ namespace ReaderUart
                 //TODO 取消循环盘存,适用于web端调用
                 RunLoopFastInventroy();
             }
+            else if (msgTran.AryData.Length == 2) //天线检测
+            {
+                strErrorCode = CommondMethod.FormatErrorCode(msgTran.AryData[1]);
+                string strLog = strCmd + "失败，原因： " + strErrorCode;
+
+                content = $"{strCmd} {strLog} ,AntNo: {msgTran.AryData[0] + 1}";
+                s_log.Debug(content);
+
+                //TODO 取消循环盘存,适用于web端调用
+                RunLoopFastInventroy();
+            }
             //读写器询检成功，状态信息返回
             else if (msgTran.AryData.Length == 7)
             {
-                int nReadRate = Convert.ToInt32(msgTran.AryData[1]) * 256 + Convert.ToInt32(msgTran.AryData[2]);
-                int nDataCount = Convert.ToInt32(msgTran.AryData[3]) * 256 * 256 * 256 + Convert.ToInt32(msgTran.AryData[4]) * 256 * 256 + Convert.ToInt32(msgTran.AryData[5]) * 256 + Convert.ToInt32(msgTran.AryData[6]);
+                int nDataCount = msgTran.AryData[0] << 16 | msgTran.AryData[1] << 8 | msgTran.AryData[2];
+                //命令总共消耗的时间 单位是ms
+                int nCommandDuration = msgTran.AryData[3] << 24 | msgTran.AryData[4] << 16 | msgTran.AryData[5] << 8 | msgTran.AryData[6];
 
-                string info = string.Format("{0}-{1}", nReadRate, nDataCount);
+                string info = string.Format("{0}-{1}", nDataCount, nCommandDuration);
                 //异步回调
                 callBack(msgTran.Cmd, info);
 
-                content = $"{strCmd}  ReadRate:{nReadRate},DataCount:{nDataCount}";
+                content = $"{strCmd}  DataCount:{nDataCount},CommandDuration:{nCommandDuration}ms";
                 s_log.Info(content);
                 print(content, 0);
 
@@ -802,7 +852,14 @@ namespace ReaderUart
                 byte btFreq = (byte)(btTemp >> 2);
                 string strFreq = GetFreqString(btFreq);
 
-                string info = string.Format("{0}-{1}-{2}-{3}-{4}", strPC, strEPC, strAntId, strFreq, strRSSI);
+                string strTid = "";
+                if (_showTid && strEPC.Length >= 24)
+                {
+                    strTid = strEPC.Substring(strEPC.Length - 24, 24);
+                    strEPC = strEPC.Substring(0, strEPC.Length - 24);
+                }
+
+                string info = string.Format("{0}-{1}-{2}-{3}-{4}-{5}", strPC, strEPC, strAntId, strFreq, strRSSI, strTid);
 
                 //异步回调
                 callBack(msgTran.Cmd, info);
