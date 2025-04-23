@@ -18,6 +18,8 @@ using WebSocketSharp;
 using System.Linq;
 using System.Timers;
 using System.Configuration;
+using UHFDemo.Model;
+using Newtonsoft.Json;
 
 namespace UHFDemo
 {
@@ -510,12 +512,13 @@ namespace UHFDemo
             }
 
             var power = Convert.ToInt32(txtPower.Text);
-            if (power < 18 || power > 26)
+            if (power < 18 || power > 33)
             {
                 MessageBox.Show("功率范围只能在18-26之间", "系统提示");
                 return;
             }
-            uart.SetOutputPower(power);
+            uart.SetOutputPower(new List<int>() { power, power, power, power });
+            //uart.SetOutputPower(power);
         }
 
         private void btnGetFrequency_Click(object sender, EventArgs e)
@@ -703,15 +706,45 @@ namespace UHFDemo
             return columnData;
         }
 
+        private List<RFIDModel> GetColumnData(DataGridView dgv, string columnName, string tid)
+        {
+            List<RFIDModel> columnData = new List<RFIDModel>();
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                if (row.Cells[columnName].Value != null)
+                {
+                    columnData.Add(new RFIDModel()
+                    {
+                        RFID = row.Cells[columnName].Value.ToString(),
+                        Sequence = row.Cells[tid].Value.ToString()
+                    });
+
+                }
+                else
+                {
+                    columnData.Add(new RFIDModel()); // 或者你可以添加null，取决于你的需求
+                }
+            }
+
+            return columnData;
+        }
+
         private void SendData()
         {
-            var data = GetColumnData(dgvInventoryTagResults, "EPC_fast_inv");
-            IEnumerable<string> trimmedData = data.Select(item => item.Replace(" ", ""));
-            string msg = string.Join(",", trimmedData).TrimEnd(',');
-            if (!string.IsNullOrEmpty(msg))
+            var data = GetColumnData(dgvInventoryTagResults, "EPC_fast_inv", "TID_fast_inv");
+            //IEnumerable<string> trimmedData = data.Select(item => item.Replace(" ", ""));
+            //string msg = string.Join(",", trimmedData).TrimEnd(',');
+
+            RequestModel request = new RequestModel();
+            request.RFIDStr = string.Join(",", data.Select(item => item.RFID + ":" + item.Sequence)).TrimEnd(',');
+            //request.RFIDInfo = data;
+            string msg = JsonConvert.SerializeObject(data);
+
+            if (!string.IsNullOrEmpty(msg) && data.Count > 0 && !string.IsNullOrEmpty(data[0].RFID))
             {
                 //执行发送
-                SendToClients(msg);
+                SendToClients(request.RFIDStr);
             }
         }
 
@@ -729,7 +762,8 @@ namespace UHFDemo
                 {
                     if (client.IsAlive) // 检查客户端是否仍然连接
                     {
-                        client.Send("{ \"arguments\":[\"" + message + "\"],\"target\":\"echo\",\"type\":1}" + "\u001e");
+                        client.Send("{\"arguments\":[\"" + message + "\"],\"target\":\"echo\",\"type\":1}" + "\u001e");
+                        //client.Send("{\"arguments\":" + message + ",\"target\":\"echo\",\"type\":1}" + "\u001e");
                     }
                 }
             }
