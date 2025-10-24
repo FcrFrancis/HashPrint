@@ -66,6 +66,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Echo.cs" />
+    <Compile Include="Model\RequestModel.cs" />
+    <Compile Include="Model\RFIDModel.cs" />
     <Compile Include="PrintInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
