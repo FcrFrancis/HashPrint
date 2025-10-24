@@ -98,32 +98,33 @@ namespace UHFDemo
                                 {
                                     //模板2，不需要逆转标签
                                     printText = $@"^XA
-                                                ^PW800
-                                                ^LL420
-                                                ^FT50,200
-                                                ^A@N,25,25,SIMSUN.TTF^FH\^CI28
-                                                ^FD货  号：^FS^CI27
-                                                ^FT51,200
-                                                ^A@N,25,25,SIMSUN.TTF^FH\^CI28
-                                                ^FD货  号：^FS^CI27
-                                                ^FO160,145
-                                                ^BY2
-                                                ^BCN,90,Y,N,N
-                                                ^FD{sku}^FS
-                                                ^FT50,300
-                                                ^A@N,25,25,SIMSUN.TTF^FH\^CI28
-                                                ^FD验证码：{snCode}^FS^CI27
-                                                ^FT51,300
-                                                ^A@N,25,25,SIMSUN.TTF^FH\^CI28
-                                                ^FD验证码：{snCode}^FS^CI27
-                                                ^FO600,235
-                                                ^BY3
-                                                ^BQN,2,3,,6
-                                                ^FDQA,{link}^FS^CI27
-                                                ^RS8
-                                                ^RFW^FD{rfid}^FS
-                                                ^PQ1,0,1,Y
-                                                ^XZ";
+                                                    ^PW800
+                                                    ^LL420
+                                                    ^FT50,200
+                                                    ^A@N,25,25,SIMSUN.TTF^FH\^CI28
+                                                    ^FD货  号：^FS^CI27
+                                                    ^FT51,200
+                                                    ^A@N,25,25,SIMSUN.TTF^FH\^CI28
+                                                    ^FD货  号：^FS^CI27
+                                                    ^FO160,165
+                                                    ^BY2
+                                                    ^BCN,50,Y,N,N
+                                                    ^A0N,50,40
+                                                    ^FD{sku}^FS
+                                                    ^FT50,300
+                                                    ^A@N,25,25,SIMSUN.TTF^FH\^CI28
+                                                    ^FD验证码：{snCode}^FS^CI27
+                                                    ^FT51,300
+                                                    ^A@N,25,25,SIMSUN.TTF^FH\^CI28
+                                                    ^FD验证码：{snCode}^FS^CI27
+                                                    ^FO630,248 
+                                                    ^BY2
+                                                    ^BQN,2,3,,6
+                                                    ^FDQA,{link}^FS^CI27
+                                                    ^RS8
+                                                    ^RFW^FD{rfid}^FS
+                                                    ^PQ1,0,1,Y
+                                                    ^XZ";
                                 }
                                 SendZebraPrint(printText);
                             }
